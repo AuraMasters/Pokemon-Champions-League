@@ -1,7 +1,9 @@
+import Home from "./pages/Home";
+
 function App() {
   return (
     <>
-      <h2>Pokemon Champions League</h2>
+      <Home/>
     </>
   )
 }
