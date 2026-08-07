@@ -21,33 +21,18 @@ export interface PokemonData {
   Category: string;
   CatchRate: string;
   LevelingRate: string;
-  IsLegendary: boolean;
-  IsMythical: boolean;
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  Normal: 'from-gray-400 to-gray-500',
-  Fire: 'from-orange-400 to-red-500',
-  Water: 'from-blue-400 to-blue-600',
-  Grass: 'from-green-400 to-green-600',
-  Electric: 'from-yellow-400 to-yellow-600',
-  Ice: 'from-cyan-300 to-cyan-500',
-  Fighting: 'from-red-600 to-red-800',
-  Poison: 'from-purple-400 to-purple-600',
-  Ground: 'from-amber-600 to-amber-800',
-  Flying: 'from-indigo-300 to-indigo-500',
-  Psychic: 'from-pink-400 to-pink-600',
-  Bug: 'from-lime-500 to-lime-700',
-  Rock: 'from-stone-500 to-stone-700',
-  Ghost: 'from-violet-600 to-violet-900',
-  Dragon: 'from-indigo-600 to-indigo-900',
-  Dark: 'from-slate-700 to-slate-900',
-  Steel: 'from-slate-400 to-slate-600',
-  Fairy: 'from-pink-300 to-pink-500',
+  Normal: '#A8A77A', Fire: '#EE8130', Water: '#6390F0', Grass: '#7AC74C',
+  Electric: '#F7D02C', Ice: '#96D9D6', Fighting: '#C22E28', Poison: '#A33EA1',
+  Ground: '#E2BF65', Flying: '#A98FF3', Psychic: '#F95587', Bug: '#A6B91A',
+  Rock: '#B6A136', Ghost: '#735797', Dragon: '#6F35FC', Dark: '#705898',
+  Steel: '#B7B7CE', Fairy: '#D685AD',
 };
 
-const INITIAL_LOAD_COUNT = 15;
-const LOAD_MORE_COUNT = 15;
+const INITIAL_LOAD_COUNT = 30;
+const LOAD_MORE_COUNT = 30;
 
 const getImageUrl = (dexNumber: number) => 
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${dexNumber}.png`;
@@ -59,68 +44,38 @@ const cleanArrayString = (str: any): string[] => {
 };
 
 // ==========================================
-// 1. PREMIUM MEMOIZED CARD WITH VIEWPORT ANIMATIONS
+// MODERN LIST ITEM COMPONENT
 // ==========================================
-const PokemonCard = memo(({ pokemon, onClick }: { pokemon: PokemonData, onClick: (p: PokemonData) => void }) => {
-  const primaryType = pokemon.Types[0] || 'Normal';
-  const bgGradient = TYPE_COLORS[primaryType] || TYPE_COLORS.Normal;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      // Triggers animation when card enters the screen
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-      transition={{ type: "spring", stiffness: 250, damping: 25 }}
-      whileHover={{ 
-        y: -8, 
-        scale: 1.02, 
-        boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.2), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        transition: { type: "spring", stiffness: 400, damping: 25 }
-      }}
-      whileTap={{ scale: 0.97 }} // Tactile click feedback
-      onClick={() => onClick(pokemon)}
-      className={`relative rounded-3xl p-6 cursor-pointer overflow-hidden shadow-lg bg-gradient-to-br ${bgGradient} border border-white/10`}
-    >
-      <div className="absolute -right-6 -bottom-6 w-40 h-40 bg-white/20 rounded-full blur-2xl pointer-events-none transition-transform duration-500 group-hover:scale-150"></div>
-      
-      <div className="relative z-10 flex justify-between items-start mb-4">
-        <div className="max-w-[70%]">
-          <h3 className="text-2xl font-black text-white capitalize drop-shadow-md truncate pb-1">
-            {pokemon.Name}
-          </h3>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {pokemon.Types.map((t) => (
-              <span key={t} className="px-3 py-1 bg-white/25 backdrop-blur-md rounded-full text-[10px] uppercase tracking-wider font-bold text-white shadow-sm border border-white/20">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-        <span className="text-white/70 font-black text-xl drop-shadow-sm tabular-nums">
-          #{pokemon.DexNumber.toString().padStart(3, '0')}
-        </span>
-      </div>
-
-      <div className="relative h-32 w-full flex justify-end items-end z-10">
-        <motion.img 
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.1 }}
-          whileHover={{ scale: 1.15, rotate: [0, -5, 5, 0] }}
-          src={getImageUrl(pokemon.DexNumber)} 
-          alt={pokemon.Name}
-          loading="lazy"
-          onError={(e) => { (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; (e.target as HTMLImageElement).className = 'h-20 w-20 object-contain opacity-50 absolute bottom-0 right-0'; }}
-          className="h-40 w-40 object-contain drop-shadow-2xl absolute -bottom-4 -right-4"
+const PokedexListItem = memo(({ pokemon, isSelected, onClick }: { pokemon: PokemonData, isSelected: boolean, onClick: (p: PokemonData) => void }) => (
+  <div 
+    onClick={() => onClick(pokemon)}
+    className={`p-4 border-b border-slate-100 cursor-pointer flex justify-between items-center transition-all ${
+      isSelected 
+        ? 'bg-red-50/50 border-l-4 border-l-red-500 pl-3' 
+        : 'hover:bg-slate-50 border-l-4 border-l-transparent pl-4'
+    }`}
+  >
+    <span className="font-semibold text-slate-700 flex items-center gap-3">
+      <span className="text-xs font-bold text-slate-400 w-8">
+        #{pokemon.DexNumber.toString().padStart(3, '0')}
+      </span>
+      {pokemon.Name}
+    </span>
+    <div className="flex gap-1.5">
+      {pokemon.Types.map(t => (
+        <span 
+          key={t} 
+          className="w-2.5 h-2.5 rounded-full shadow-sm" 
+          style={{ backgroundColor: TYPE_COLORS[t] || '#ccc' }} 
+          title={t} 
         />
-      </div>
-    </motion.div>
-  );
-}, (prev, next) => prev.pokemon.Name === next.pokemon.Name);
+      ))}
+    </div>
+  </div>
+), (prev, next) => prev.pokemon.DexNumber === next.pokemon.DexNumber && prev.isSelected === next.isSelected);
 
-export default function Pokedex() {
+
+export default function ModernPokedex() {
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -159,11 +114,10 @@ export default function Pokedex() {
             Category: String(p.Category || '').trim(),
             CatchRate: String(p.CatchRate || '').trim(),
             LevelingRate: String(p.LevelingRate || '').trim(),
-            IsLegendary: Boolean(p.IsLegendary),
-            IsMythical: Boolean(p.IsMythical),
           }));
         setPokemonList(sanitizedData);
-        setIsLoading(false);
+        // Slight delay for smooth entrance
+        setTimeout(() => setIsLoading(false), 800);
       },
     });
   }, []);
@@ -191,251 +145,241 @@ export default function Pokedex() {
   }, [pokemonList, deferredSearchTerm, selectedType]);
 
   const visiblePokemon = useMemo(() => filteredPokemon.slice(0, visibleCount), [filteredPokemon, visibleCount]);
-  const hasMore = visibleCount < filteredPokemon.length;
+  
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && visibleCount < filteredPokemon.length) {
+      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
+    }
+  };
 
-  const handleCardClick = useCallback((pokemon: PokemonData) => setSelectedPokemon(pokemon), []);
+  const handleCardClick = useCallback((pokemon: PokemonData) => {
+    setSelectedPokemon(prev => prev?.DexNumber === pokemon.DexNumber ? null : pokemon);
+  }, []);
+
+  // Shared Pokeball element from the Home design
+  const PokeballLogo = ({ size = "large" }: { size?: "small" | "large" }) => (
+    <div className={`${size === "large" ? "w-20 h-20" : "w-12 h-12"} mx-auto rounded-full border-[3px] border-slate-900 shadow-lg shadow-red-500/20 relative flex items-center justify-center overflow-hidden`}>
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-red-500 to-red-600"></div>
+      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-slate-50"></div>
+      <div className="w-full h-1.5 bg-slate-900 absolute top-1/2 -translate-y-1/2"></div>
+      <div className={`${size === "large" ? "w-6 h-6" : "w-4 h-4"} bg-slate-900 rounded-full z-10 flex items-center justify-center`}>
+        <div className={`${size === "large" ? "w-2.5 h-2.5" : "w-1.5 h-1.5"} bg-white rounded-full`}></div>
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
-        <motion.div 
-          animate={{ rotate: 360 }} 
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-16 h-16 border-4 border-slate-200 border-t-red-500 rounded-full"
-        />
-        <motion.p 
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-          className="mt-6 text-slate-500 font-bold uppercase tracking-widest text-sm"
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center relative overflow-hidden font-sans text-slate-900">
+        <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=')]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-red-100/40 to-slate-100/10 blur-[100px] rounded-full pointer-events-none z-0"></div>
+        
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+          className="relative z-10"
         >
-          Booting Rotom Dex...
+          <PokeballLogo />
+        </motion.div>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 text-sm font-semibold text-slate-500 tracking-widest uppercase z-10"
+        >
+          Loading Database...
         </motion.p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-6 md:p-12 selection:bg-red-500/20 pb-32">
-      <div className="max-w-7xl mx-auto mb-12">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8"
-        >
-          <div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-slate-900 mb-2">
-              National <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-400">Pokédex</span>
-            </h1>
-            <p className="text-slate-500 font-medium">Database loaded: {pokemonList.length} species.</p>
-          </div>
+    <div className="min-h-[100dvh] bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden font-sans text-slate-900 selection:bg-red-500/20 selection:text-red-900 p-4">
+      
+      {/* Background Ambience */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=')]"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-red-100/40 to-slate-100/10 blur-[100px] rounded-full pointer-events-none z-0"></div>
+      
+      {/* Main Glass App Container */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-[1000px] h-[85vh] bg-white/80 backdrop-blur-3xl border border-slate-200/80 rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] flex flex-col md:flex-row overflow-hidden"
+      >
+        
+        {/* ========================================== */}
+        {/* LEFT PANEL: Search & List */}
+        {/* ========================================== */}
+        <div className="w-full md:w-[380px] flex flex-col border-b md:border-b-0 md:border-r border-slate-200/80 bg-white/50 z-20 shrink-0 h-[40vh] md:h-full">
           
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <input 
-              type="text" 
-              placeholder="Search name, ID, or species..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-5 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-red-500/20 focus:border-red-500 outline-none w-full sm:w-80 transition-all font-medium placeholder:text-slate-400"
-            />
-            <select 
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-5 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-red-500/20 outline-none w-full sm:w-48 cursor-pointer font-medium appearance-none"
-            >
-              {allTypes.map(type => (
-                <option key={type} value={type}>{type === 'All' ? 'All Types' : type}</option>
-              ))}
-            </select>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {visiblePokemon.map((pokemon) => (
-          <PokemonCard key={`${pokemon.DexNumber}-${pokemon.Name}`} pokemon={pokemon} onClick={handleCardClick} />
-        ))}
-      </div>
-
-      {filteredPokemon.length === 0 && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          className="max-w-7xl mx-auto text-center py-20"
-        >
-          <div className="text-6xl mb-4 grayscale opacity-50">🔍</div>
-          <h3 className="text-2xl font-bold text-slate-800">No Pokémon found</h3>
-          <p className="text-slate-500 mt-2">Try adjusting your filters or search term.</p>
-        </motion.div>
-      )}
-
-      {hasMore && (
-        <div className="max-w-7xl mx-auto mt-16 flex justify-center">
-          <motion.button
-            whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
-            whileTap={{ y: 0, scale: 0.95 }}
-            onClick={() => setVisibleCount(prev => prev + LOAD_MORE_COUNT)}
-            className="group relative px-10 py-4 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 hover:border-red-500 hover:text-red-500 transition-colors duration-300 shadow-sm flex items-center gap-3"
-          >
-            <span>Load More Pokémon</span>
-            <span className="text-sm bg-slate-100 text-slate-500 px-2 py-1 rounded-md group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
-              {filteredPokemon.length - visibleCount} left
-            </span>
-          </motion.button>
-        </div>
-      )}
-
-      {/* ========================================== */}
-      {/* 2. CHOREOGRAPHED MODAL ANIMATIONS */}
-      {/* ========================================== */}
-      <AnimatePresence>
-        {selectedPokemon && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <motion.div 
-              initial={{ opacity: 0, backdropFilter: "blur(0px)" }} 
-              animate={{ opacity: 1, backdropFilter: "blur(8px)" }} 
-              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setSelectedPokemon(null)}
-              className="absolute inset-0 bg-slate-900/60 cursor-pointer"
-            />
+          {/* Header */}
+          <div className="p-6 border-b border-slate-100 flex flex-col gap-4">
+            <div className="flex items-center gap-3 mb-2">
+              <PokeballLogo size="small" />
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+                PCL <span className="text-red-600 font-bold">Database</span>
+              </h2>
+            </div>
             
-            <motion.div 
-              initial={{ opacity: 0, y: 100, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden z-10 flex flex-col max-h-[90vh]"
-            >
-              <div className={`p-8 bg-gradient-to-br ${TYPE_COLORS[selectedPokemon.Types[0]] || TYPE_COLORS.Normal} relative shrink-0 border-b border-white/10`}>
-                <motion.button 
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setSelectedPokemon(null)}
-                  className="absolute top-6 right-6 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full text-white flex items-center justify-center transition-colors z-20"
+            <div className="flex flex-col gap-3">
+              <input 
+                type="text" 
+                placeholder="Search Pokémon..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+              />
+              <div className="flex items-center gap-2">
+                <select 
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all appearance-none cursor-pointer"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </motion.button>
-                
-                <div className="flex justify-between items-center relative z-10">
-                  <div className="text-white z-20">
-                    <motion.div 
-                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-                      className="flex items-center gap-2 mb-2"
-                    >
-                      <span className="text-sm font-bold opacity-90 uppercase tracking-widest bg-black/10 px-3 py-1 rounded-full border border-white/10">
-                        #{selectedPokemon.DexNumber.toString().padStart(3, '0')} • {selectedPokemon.Category}
-                      </span>
-                    </motion.div>
-                    <motion.h2 
-                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-                      className="text-5xl font-black capitalize drop-shadow-lg tracking-tight"
-                    >
-                      {selectedPokemon.Name}
-                    </motion.h2>
-                    <motion.div 
-                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                      className="flex gap-2 mt-4"
-                    >
-                      {selectedPokemon.Types.map((t) => (
-                        <span key={t} className="px-5 py-1.5 bg-black/20 backdrop-blur-sm rounded-full text-sm font-bold uppercase tracking-wider shadow-sm border border-white/10">
-                          {t}
-                        </span>
-                      ))}
-                    </motion.div>
-                  </div>
-                  
-                  {/* Continuous floating animation for modal image */}
-                  <motion.img 
-                    initial={{ opacity: 0, x: 100, scale: 0.5 }}
-                    animate={{ 
-                      opacity: 1, 
-                      x: 0, 
-                      scale: 1,
-                      y: [0, -10, 0] // Floating effect
-                    }}
-                    transition={{
-                      opacity: { duration: 0.4 },
-                      x: { type: "spring", stiffness: 200, damping: 20 },
-                      scale: { type: "spring", stiffness: 200, damping: 20 },
-                      y: { repeat: Infinity, duration: 4, ease: "easeInOut" } // Infinite float
-                    }}
-                    src={getImageUrl(selectedPokemon.DexNumber)} 
-                    alt={selectedPokemon.Name}
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
-                    className="w-48 h-48 object-contain drop-shadow-2xl translate-y-12 z-10"
-                  />
+                  {allTypes.map(t => <option key={t} value={t}>{t === 'All' ? 'All Types' : t}</option>)}
+                </select>
+                <div className="px-3 py-2 bg-slate-100 rounded-xl text-xs font-bold text-slate-400 border border-slate-100">
+                  {filteredPokemon.length}
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div className="p-8 pt-16 bg-white overflow-y-auto">
-                <div className="grid grid-cols-2 gap-8 mb-10 border-b border-slate-100 pb-10">
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Abilities</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedPokemon.Abilities.map(a => (
-                        <span key={a} className="font-bold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg text-sm">{a}</span>
-                      ))}
-                    </div>
-                    {selectedPokemon.HiddenAbility.length > 0 && (
-                      <div className="mt-4">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Hidden Ability</span>
-                        <span className="font-bold text-purple-600 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-lg text-sm inline-block">
-                          {selectedPokemon.HiddenAbility.join(', ')}
-                        </span>
-                      </div>
-                    )}
-                  </motion.div>
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center">
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Height</h4>
-                      <p className="font-black text-slate-800 text-lg">{selectedPokemon.Height} <span className="text-sm font-semibold text-slate-500">m</span></p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center">
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Weight</h4>
-                      <p className="font-black text-slate-800 text-lg">{selectedPokemon.Weight} <span className="text-sm font-semibold text-slate-500">kg</span></p>
-                    </div>
-                  </motion.div>
+          {/* List View */}
+          <div 
+            className="flex-1 overflow-y-auto custom-scrollbar relative" 
+            onScroll={handleScroll}
+          >
+            {visiblePokemon.map((pokemon) => (
+              <PokedexListItem 
+                key={`${pokemon.DexNumber}-${pokemon.Name}`} 
+                pokemon={pokemon} 
+                isSelected={selectedPokemon?.DexNumber === pokemon.DexNumber}
+                onClick={handleCardClick} 
+              />
+            ))}
+            {filteredPokemon.length === 0 && (
+              <div className="p-8 text-center text-sm font-medium text-slate-400">
+                No Pokémon found.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ========================================== */}
+        {/* RIGHT PANEL: Details View */}
+        {/* ========================================== */}
+        <div className="flex-1 bg-slate-50/30 relative flex flex-col h-[60vh] md:h-full overflow-hidden">
+          <AnimatePresence mode="wait">
+            {selectedPokemon ? (
+              <motion.div 
+                key={selectedPokemon.DexNumber}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12 flex flex-col items-center"
+              >
+                {/* Visual Header */}
+                <div className="relative w-full max-w-sm aspect-square mb-8 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-slate-200/50 to-slate-100/50 rounded-[3rem] -rotate-3"></div>
+                  <motion.img 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 100, delay: 0.1 }}
+                    src={getImageUrl(selectedPokemon.DexNumber)}
+                    alt={selectedPokemon.Name}
+                    className="w-4/5 h-4/5 object-contain relative z-10 drop-shadow-2xl"
+                  />
+                  {/* Floating Type Badges */}
+                  <div className="absolute -bottom-4 flex gap-2 z-20">
+                    {selectedPokemon.Types.map(t => (
+                      <span 
+                        key={t} 
+                        style={{ backgroundColor: TYPE_COLORS[t] || '#ccc' }}
+                        className="px-4 py-1.5 rounded-full text-white text-xs font-bold tracking-wide shadow-md"
+                      >
+                        {t.toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
-                <div>
-                  <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-                    className="flex justify-between items-end mb-6"
-                  >
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Base Stats</h4>
-                    <span className="text-sm font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-lg">Total: {selectedPokemon.TotalStats}</span>
-                  </motion.div>
-                  
-                  <div className="space-y-4">
+                {/* Info Text */}
+                <div className="text-center mb-10 w-full max-w-md">
+                  <p className="text-sm font-bold text-slate-400 mb-1">
+                    #{selectedPokemon.DexNumber.toString().padStart(3, '0')}
+                  </p>
+                  <h1 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">
+                    {selectedPokemon.Name}
+                  </h1>
+                  <p className="text-slate-500 font-medium">{selectedPokemon.Category}</p>
+                </div>
+
+                {/* Measurements Grid */}
+                <div className="w-full max-w-md grid grid-cols-2 gap-4 mb-10">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
+                    <p className="text-xs font-bold text-slate-400 mb-1">HEIGHT</p>
+                    <p className="text-lg font-semibold text-slate-700">{selectedPokemon.Height} m</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
+                    <p className="text-xs font-bold text-slate-400 mb-1">WEIGHT</p>
+                    <p className="text-lg font-semibold text-slate-700">{selectedPokemon.Weight} kg</p>
+                  </div>
+                </div>
+
+                {/* Base Stats */}
+                <div className="w-full max-w-md bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                  <h3 className="text-sm font-bold text-slate-900 mb-5 tracking-wide">BASE STATS</h3>
+                  <div className="flex flex-col gap-4">
                     {[
-                      { label: 'HP', value: selectedPokemon.Hp, color: 'bg-green-500' },
-                      { label: 'Attack', value: selectedPokemon.Attack, color: 'bg-red-500' },
-                      { label: 'Defense', value: selectedPokemon.Defense, color: 'bg-orange-500' },
-                      { label: 'Sp. Atk', value: selectedPokemon.SpecialAttack, color: 'bg-blue-500' },
-                      { label: 'Sp. Def', value: selectedPokemon.SpecialDefense, color: 'bg-indigo-500' },
-                      { label: 'Speed', value: selectedPokemon.Speed, color: 'bg-pink-500' },
-                    ].map((stat, index) => (
-                      <div key={stat.label} className="flex items-center text-sm">
-                        <span className="w-20 font-bold text-slate-400 uppercase tracking-wider text-[11px]">{stat.label}</span>
-                        <span className="w-12 font-black text-slate-800 text-right mr-4 tabular-nums">{stat.value}</span>
-                        <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
-                          {/* Sequentially staggered stat bars using index */}
+                      { label: 'HP', val: selectedPokemon.Hp },
+                      { label: 'Attack', val: selectedPokemon.Attack },
+                      { label: 'Defense', val: selectedPokemon.Defense },
+                      { label: 'Sp. Atk', val: selectedPokemon.SpecialAttack },
+                      { label: 'Sp. Def', val: selectedPokemon.SpecialDefense },
+                      { label: 'Speed', val: selectedPokemon.Speed },
+                    ].map(stat => (
+                      <div key={stat.label} className="flex items-center gap-4">
+                        <span className="w-16 text-xs font-bold text-slate-400 uppercase">{stat.label}</span>
+                        <span className="w-8 text-sm font-semibold text-slate-700 text-right">{stat.val}</span>
+                        <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min((stat.value / 255) * 100, 100)}%` }}
-                            transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.5 + (index * 0.1) }}
-                            className={`h-full rounded-full ${stat.color}`}
-                          />
+                            animate={{ width: `${(stat.val / 255) * 100}%` }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className={`h-full rounded-full ${stat.val > 100 ? 'bg-red-500' : stat.val > 60 ? 'bg-slate-800' : 'bg-slate-400'}`}
+                          ></motion.div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
+                <div className="w-full h-12 shrink-0"></div> {/* Bottom Padding */}
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center h-full text-slate-400"
+              >
+                <div className="opacity-20 mb-6 pointer-events-none grayscale">
+                  <PokeballLogo />
+                </div>
+                <p className="text-sm font-semibold">Select a Pokémon to view details.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+      
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
     </div>
   );
 }
