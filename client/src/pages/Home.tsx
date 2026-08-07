@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden font-sans text-slate-900 selection:bg-red-500/20 selection:text-red-900">
       <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=')]"></div>
@@ -48,7 +51,10 @@ export default function Home() {
           transition={{ delay: 0.3, duration: 0.4 }}
           className="w-full flex flex-col gap-3"
         >
-          <button className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all shadow-[0_2px_10px_rgb(220,38,38,0.2)] hover:shadow-[0_4px_15px_rgb(220,38,38,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all shadow-[0_2px_10px_rgb(220,38,38,0.2)] hover:shadow-[0_4px_15px_rgb(220,38,38,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          >
             Sign In to PCL
           </button>
           <div className="flex items-center gap-3 my-2 opacity-60">
@@ -59,7 +65,10 @@ export default function Home() {
             <div className="h-px w-full bg-slate-200"></div>
           </div>
 
-          <button className="w-full py-3.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-200 transition-all hover:border-slate-300 hover:text-slate-900 active:scale-[0.98] cursor-pointer">
+          <button
+            onClick={() => navigate("/register")}
+            className="w-full py-3.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-200 transition-all hover:border-slate-300 hover:text-slate-900 active:scale-[0.98] cursor-pointer"
+          >
             Create an Account
           </button>
         </motion.div>
